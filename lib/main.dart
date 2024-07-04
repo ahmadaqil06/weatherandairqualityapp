@@ -3,8 +3,11 @@ import 'package:weatherandairqualityapp/pages/main_page.dart';
 import 'package:weatherandairqualityapp/pages/settings_page.dart';
 import 'package:weatherandairqualityapp/pages/camera_page.dart';
 import 'package:weatherandairqualityapp/pages/location_list_page.dart';
+import 'package:weatherandairqualityapp/services/database_helper.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MongoService().connect();
   runApp(MyApp());
 }
 

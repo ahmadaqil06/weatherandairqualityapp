@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:weatherandairqualityapp/services/api_service.dart';
-import 'package:weatherandairqualityapp/model/air_quality_data.dart';
-import 'package:weatherandairqualityapp/model/weather_data.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -10,9 +9,10 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final ApiService apiService = ApiService();
+  final TextEditingController _typeAheadController = TextEditingController();
   String city = 'Jakarta';
-  late Map<String, dynamic> weatherData;
-  late Map<String, dynamic> airQualityData;
+  Map<String, dynamic>? weatherData;
+  Map<String, dynamic>? airQualityData;
 
   @override
   void initState() {
@@ -40,16 +40,44 @@ class _MainPageState extends State<MainPage> {
       body: weatherData == null || airQualityData == null
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              child: Column(
-                children: [
-                  Text('Weather in $city', style: TextStyle(fontSize: 24)),
-                  Text('Temperature: ${weatherData['main']['temp']}°C'),
-                  Text('Humidity: ${weatherData['main']['humidity']}%'),
-                  SizedBox(height: 20),
-                  Text('Air Quality in $city', style: TextStyle(fontSize: 24)),
-                  Text('AQI: ${airQualityData['list'][0]['main']['aqi']}'),
-                  Text('PM2.5: ${airQualityData['list'][0]['components']['pm2_5']} µg/m³'),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TypeAheadField<String>(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        controller: _typeAheadController,
+                        decoration: InputDecoration(
+                          labelText: 'Search City',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      suggestionsCallback: (pattern) async {
+                        return await apiService.fetchCitySuggestions(pattern);
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title: Text(suggestion),
+                        );
+                      },
+                      onSuggestionSelected: (suggestion) {
+                        setState(() {
+                          city = suggestion;
+                          _typeAheadController.text = city;
+                        });
+                        _fetchData();
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    Text('Weather in $city', style: TextStyle(fontSize: 24)),
+                    Text('Temperature: ${weatherData!['main']['temp']}°C'),
+                    Text('Humidity: ${weatherData!['main']['humidity']}%'),
+                    SizedBox(height: 20),
+                    Text('Air Quality in $city', style: TextStyle(fontSize: 24)),
+                    Text('AQI: ${airQualityData!['list'][0]['main']['aqi']}'),
+                    Text('PM2.5: ${airQualityData!['list'][0]['components']['pm2_5']} µg/m³'),
+                  ],
+                ),
               ),
             ),
       drawer: Drawer(

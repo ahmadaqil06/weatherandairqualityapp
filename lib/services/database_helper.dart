@@ -1,41 +1,33 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
-class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => _instance;
-  DatabaseHelper._internal();
+class MongoService {
+  static final MongoService _instance = MongoService._internal();
+  factory MongoService() => _instance;
+  MongoService._internal();
 
-  late Database _database;
+  late Db db;
+  late DbCollection collection;
 
-  Future<Database> get database async {
-    if (_database != null) return _database;
-    _database = await _initDatabase();
-    return _database;
+  Future<void> connect() async {
+    db = await Db.create('mongodb://localhost:27017');
+    await db.open();
+    collection = db.collection('location');
   }
 
-  Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'app_database.db');
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
-  }
-
-  Future _onCreate(Database db, int version) async {
-    await db.execute(
-      "CREATE TABLE locations(id INTEGER PRIMARY KEY, name TEXT, latitude REAL, longitude REAL)",
-    );
-  }
-
-  Future<int> insertLocation(Map<String, dynamic> row) async {
-    Database db = await database;
-    return await db.insert('locations', row);
+  Future<void> insertLocation(Map<String, dynamic> row) async {
+    await collection.insert(row);
   }
 
   Future<List<Map<String, dynamic>>> queryAllLocations() async {
-    Database db = await database;
-    return await db.query('locations');
+    return await collection.find().toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getHistory() async {
+    final data = await collection.find().toList();
+    return data;
+  }
+
+  Future<void> close() async {
+    await db.close();
   }
 }

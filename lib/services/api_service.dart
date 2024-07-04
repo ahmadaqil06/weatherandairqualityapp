@@ -21,4 +21,23 @@ class ApiService {
       throw Exception('Failed to load air quality data');
     }
   }
+
+  Future<List<String>> fetchCitySuggestions(String query) async {
+    // Replace with your actual API call to fetch city suggestions
+    // Here we use a simple hardcoded list for demonstration
+    List<String> cities = [
+      'Jakarta',
+      'Surabaya',
+      'Bandung',
+      'Medan',
+      'Semarang',
+      'Palembang',
+      'Makassar',
+      'Batam',
+      'Pekanbaru',
+      'Bogor'
+    ];
+
+    return cities.where((city) => city.toLowerCase().startsWith(query.toLowerCase())).toList();
+  }
 }
