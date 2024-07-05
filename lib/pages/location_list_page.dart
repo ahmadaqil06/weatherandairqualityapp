@@ -8,7 +8,7 @@ class LocationListPage extends StatefulWidget {
 }
 
 class _LocationListPageState extends State<LocationListPage> {
-  final MongoService dbHelper = MongoService();
+  final DatabaseHelper dbHelper = DatabaseHelper();
   List<Map<String, dynamic>> _locations = [];
 
   @override
@@ -20,7 +20,7 @@ class _LocationListPageState extends State<LocationListPage> {
   Future<void> _fetchLocations() async {
     final locations = await dbHelper.queryAllLocations();
     setState(() {
-      _locations = locations;
+      _locations = locations!;
     });
   }
 

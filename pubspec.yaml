@@ -21,7 +21,7 @@ dependencies:
   firebase_core: ^3.1.1
   firebase_auth: ^5.1.1
   provider: ^6.1.2
-  flutter_typeahead: ^3.1.1
+  intl: ^0.17.0
 
 dev_dependencies:
   dart_code_metrics: ^4.2.0

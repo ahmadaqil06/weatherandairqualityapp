@@ -1,33 +1,53 @@
-import 'package:mongo_dart/mongo_dart.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
-class MongoService {
-  static final MongoService _instance = MongoService._internal();
-  factory MongoService() => _instance;
-  MongoService._internal();
+class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  factory DatabaseHelper() => _instance;
+  DatabaseHelper._internal();
 
-  late Db db;
-  late DbCollection collection;
+  Database? _database;
 
-  Future<void> connect() async {
-    db = await Db.create('mongodb://localhost:27017');
-    await db.open();
-    collection = db.collection('location');
+  Future<void> initDatabase() async {
+    _database = await _initDatabase();
+  }
+
+  Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'app_database.db');
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _onCreate,
+    );
+  }
+
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute(
+      "CREATE TABLE locations(id INTEGER PRIMARY KEY, name TEXT, latitude REAL, longitude REAL)",
+    );
   }
 
   Future<void> insertLocation(Map<String, dynamic> row) async {
-    await collection.insert(row);
+    final db = _database;
+    if (db == null) return;
+    await db.insert('locations', row);
   }
 
   Future<List<Map<String, dynamic>>> queryAllLocations() async {
-    return await collection.find().toList();
+    final db = _database;
+    if (db == null) return [];
+    return await db.query('locations');
   }
 
-  Future<List<Map<String, dynamic>>> getHistory() async {
-    final data = await collection.find().toList();
-    return data;
+  Future<void> updateLocation(int id, Map<String, dynamic> row) async {
+    final db = _database;
+    if (db == null) return;
+    await db.update('locations', row, where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> close() async {
-    await db.close();
+  Future<void> deleteLocation(int id) async {
+    final db = _database;
+    if (db == null) return;
+    await db.delete('locations', where: 'id = ?', whereArgs: [id]);
   }
 }

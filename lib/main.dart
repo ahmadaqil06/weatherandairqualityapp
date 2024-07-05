@@ -7,7 +7,7 @@ import 'package:weatherandairqualityapp/services/database_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MongoService().connect();
+  await DatabaseHelper().initDatabase();
   runApp(MyApp());
 }
 
